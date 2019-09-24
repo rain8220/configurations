@@ -1,0 +1,112 @@
+set nocompatible
+set autowrite
+filetype plugin indent on
+set nobackup
+set ignorecase
+set number
+set ruler
+set showmatch
+
+"自动缩进
+set noautoindent
+set cindent
+set smartindent
+
+"Tab键的宽度
+set shiftwidth=4
+set tabstop=4
+
+"使用4个空格代替Tab
+set expandtab
+set softtabstop=4
+
+
+" vundle 环境设置
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+" vundle 管理的插件列表必须位于 vundle#begin() 和 vundle#end() 之间
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'tomasr/molokai'
+Plugin 'Lokaltog/vim-powerline'
+Plugin 'octol/vim-cpp-enhanced-highlight'
+" 可以快速对齐的插件
+Plugin 'junegunn/vim-easy-align'
+" 用来提供一个导航目录的侧边栏
+Plugin 'scrooloose/nerdtree'
+" 可以使 nerdtree 的 tab 更加友好些
+Plugin 'jistr/vim-nerdtree-tabs'
+" 可以在导航目录中看到 git 版本信息
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+" 查看当前代码文件中的变量和函数列表的插件，
+" 可以切换和跳转到代码中对应的变量和函数的位置
+" 大纲式导航, Go 需要 https://github.com/jstemmer/gotags 支持
+Plugin 'majutsushi/tagbar'
+" 自动补全括号的插件，包括小括号，中括号，以及花括号
+Plugin 'jiangmiao/auto-pairs'
+" Vim状态栏插件，包括显示行号，列号，文件类型，文件名，以及Git状态
+Plugin 'vim-airline/vim-airline'
+" 代码自动完成，安装完插件还需要额外配置才可以使用
+Plugin 'Valloric/YouCompleteMe'
+" 可以在文档中显示 git 信息
+Plugin 'airblade/vim-gitgutter'
+" 下面两个插件要配合使用，可以自动生成代码块
+Plugin 'SirVer/ultisnips'
+Plugin 'honza/vim-snippets'
+" 可以在 vim 中使用 tab 补全
+Plugin 'vim-scripts/SuperTab'
+" 可以在 vim 中自动完成
+Plugin 'Shougo/neocomplete.vim'
+" go 主要插件
+Plugin 'fatih/vim-go'
+" go 中的代码追踪，输入 gd 就可以自动跳转
+Plugin 'dgryski/vim-godef'
+call vundle#end()
+" end of vundle 插件设置
+
+" 语法
+filetype plugin indent on
+syntax enable
+syntax on
+
+" 配色方案
+set background=dark
+"colorscheme solarized
+colorscheme molokai
+"colorscheme phd
+
+" 总是显示状态栏
+set laststatus=2
+" 高亮显示当前行/列
+" set cursorline
+set cursorcolumn
+" 高亮显示搜索结果
+set hlsearch
+" 退出插入模式指定类型的文件自动保存
+au InsertLeave *.go,*.sh,*.c,*.cpp,*.h,*.py write
+
+" 以下为设置快捷键
+" 设置 leader 键，默认为"/"
+let mapleader="/"
+" You can add some shortcuts to make it easier to jump between errors in quickfix list
+map <C-n> :cnext<CR>
+map <C-m> :cprevious<CR>
+nnoremap <leader>a :cclose<CR>
+" use these shortcuts to build and run a Go program with <leader>b and <leader>r:
+" run :GoBuild or :GoTestCompile based on the go file
+function! s:build_go_files()
+  let l:file = expand('%')
+  if l:file =~# '^\f\+_test\.go$'
+    call go#test#Test(0, 1)
+  elseif l:file =~# '^\f\+\.go$'
+    call go#cmd#Build(0)
+  endif
+endfunction
+
+autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
+" Now whenever you hit <leader>b it'll build either your Go file or it'll compile your test files seamlessly
+autocmd FileType go nmap <leader>r  <Plug>(go-run)
+autocmd FileType go nmap <leader>t  <Plug>(go-test)
+" end of 快捷键设置
+
