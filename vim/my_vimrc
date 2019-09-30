@@ -47,6 +47,8 @@ Plugin 'majutsushi/tagbar'
 Plugin 'jiangmiao/auto-pairs'
 " Vim状态栏插件，包括显示行号，列号，文件类型，文件名，以及Git状态
 Plugin 'vim-airline/vim-airline'
+" Airline主题
+Plugin 'vim-airline/vim-airline-themes'
 " 代码自动完成，安装完插件还需要额外配置才可以使用
 Plugin 'Valloric/YouCompleteMe'
 " 可以在文档中显示 git 信息
@@ -76,15 +78,24 @@ set background=dark
 colorscheme molokai
 "colorscheme phd
 
+" ======================================================================
+" 状态栏配置
+" ======================================================================
 " 总是显示状态栏
 set laststatus=2
+" 选择状态栏主题
+let g:airline_theme='base16'
+" 显示窗口tab和buffer
+let g:airline#extensions#tabline#enabled = 1
+
+
 " 高亮显示当前行/列
 " set cursorline
 set cursorcolumn
 " 高亮显示搜索结果
-set hlsearch
+" set hlsearch
 " 退出插入模式指定类型的文件自动保存
-au InsertLeave *.go,*.sh,*.c,*.cpp,*.h,*.py write
+au InsertLeave *.go,*.sh,*.c,*.cc,*.cpp,*.h,*.py write
 
 
 " ============================================================
@@ -97,8 +108,8 @@ let g:ycm_autoclose_preview_window_after_completion = 0
 " ============================================================
 " 以下为设置快捷键
 " =============================================================
-" 设置 leader 键，默认为"/"
-let mapleader="/"
+" 设置 leader 键
+let mapleader=";"
 " You can add some shortcuts to make it easier to jump between errors in quickfix list
 map <C-n> :cnext<CR>
 map <C-m> :cprevious<CR>
@@ -200,8 +211,67 @@ au InsertEnter * exec "inoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " 
 " ==============================================================================
 map <F3> :NERDTreeMirror<CR>
 map <F3> :NERDTreeToggle<CR>
+"去除第一行的帮助提示
+let NERDTreeMinimalUI=1
+"在左边占多宽
+let NERDTreeWinSize=30
+"不高亮显示光标所在的文件
+let NERDTreeHighlightCursorline=0
+"当前目录的设定
+let NERDTreeChDirMode = 2
+"自动退出
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") &&b:NERDTreeType == "primary") | q | endif
+"打开vim时自动打开
+autocmd vimenter * NERDTree
 
 "==============================================================================
-"设置tabgar, 在右侧显示tags
+"设置tabgar, 显示在NERDTree的下方
 "==============================================================================
 map <F4> :TagbarToggle<CR>
+"打开文件自动 打开tagbar
+autocmd BufReadPost *.cpp,*.c,*.h,*.hpp,*.cc,*.cxx,*.go call tagbar#autoopen()
+"在这儿设定二者的分布
+let g:tagbar_vertical = 30
+"去除第一行的帮助信息
+let g:tagbar_compact = 1
+"当编辑代码时，在Tagbar自动追踪变量
+let g:tagbar_autoshowtag = 1
+"个人爱好，展开关闭文件夹的图标
+let g:tagbar_iconchars = ['▸', '▾']
+"打开vim时自动打开
+autocmd VimEnter * nested :TagbarOpen
+wincmd l
+"如果不加这句，打开vim的时候当前光标会在Nerdtree区域
+autocmd VimEnter * wincmd l
+
+"==============================================================================
+""  nerdtree-git-plugin 插件
+"==============================================================================
+let g:NERDTreeIndicatorMapCustom = {
+    \ "Modified"  : "✹",
+    \ "Staged"    : "✚",
+    \ "Untracked" : "✭",
+    \ "Renamed"   : "➜",
+    \ "Unmerged"  : "═",
+    \ "Deleted"   : "✖",
+    \ "Dirty"     : "✗",
+    \ "Clean"     : "✔︎",
+    \ 'Ignored'   : '☒',
+    \ "Unknown"   : "?"
+    \ }
+
+let g:NERDTreeShowIgnoredStatus = 1
+
+" ==============================================================================
+" tab 标签页切换快捷键
+" ===============================================================================
+:nn <Leader>1 1gt
+:nn <Leader>2 2gt
+:nn <Leader>3 3gt
+:nn <Leader>4 4gt
+:nn <Leader>5 5gt
+:nn <Leader>6 6gt
+:nn <Leader>7 7gt
+:nn <Leader>8 8gt
+:nn <Leader>9 8gt
+:nn <Leader>0 :tablast<CR>
