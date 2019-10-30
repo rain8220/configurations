@@ -6,6 +6,7 @@ set ignorecase
 set number
 set ruler
 set showmatch
+set hidden
 
 "自动缩进
 set noautoindent
@@ -62,6 +63,10 @@ Plugin 'vim-scripts/SuperTab'
 " Plugin 'Shougo/neocomplete.vim'
 " go 主要插件
 Plugin 'fatih/vim-go'
+" allows you to split or join Go structs
+Plugin 'AndrewRadev/splitjoin.vim'
+" Move between functions
+Plugin 'ctrlpvim/ctrlp.vim'
 " go 中的代码追踪，输入 gd 就可以自动跳转
 Plugin 'dgryski/vim-godef'
 call vundle#end()
@@ -110,6 +115,8 @@ let g:ycm_autoclose_preview_window_after_completion = 0
 " =============================================================
 " 设置 leader 键
 let mapleader=";"
+" 设置 ESC键
+inoremap jk <Esc>
 " You can add some shortcuts to make it easier to jump between errors in quickfix list
 map <C-n> :cnext<CR>
 map <C-m> :cprevious<CR>
@@ -130,6 +137,28 @@ autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
 autocmd FileType go nmap <leader>r  <Plug>(go-run)
 autocmd FileType go nmap <leader>t  <Plug>(go-test)
 autocmd FileType go nmap <Leader>c <Plug>(go-coverage-toggle)
+" :GoDoc
+autocmd FileType go nmap <Leader>d <Plug>(go-doc)
+" :GoInfo
+autocmd FileType go nmap <Leader>i <Plug>(go-info)
+" :GoMetaLinter
+autocmd FileType go nmap <Leader>l <Plug>(go-metalinter)
+
+" Open :GoDeclsDir with ctrl-g
+nmap <C-g> :GoDeclsDir<cr>
+imap <C-g> <esc>:<C-u>GoDeclsDir<cr>
+
+
+" add new commands, called :A, :AV, :AS and :AT. Here :A works just like :GoAlternate, it replaces the current buffer with the alternate file. :AV will open a new vertical split with the alternate file. :AS will open the alternate file in a new split view and :AT in a new tab. These commands are very productive depending on how you use them, so I think it's useful to have them.
+autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
+autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
+autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
+autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
+
+
+" This way it will both close the buffer and go to the previous one
+" 快捷键 cb 可关闭当前buffer,并在当前窗口打开前一个buffer
+nnoremap cb :bp<cr>:bd #<cr>
 
 " end of 快捷键设置
 
@@ -231,7 +260,7 @@ map <F4> :TagbarToggle<CR>
 "打开文件自动 打开tagbar
 autocmd BufReadPost *.cpp,*.c,*.h,*.hpp,*.cc,*.cxx,*.go call tagbar#autoopen()
 "在这儿设定二者的分布
-let g:tagbar_vertical = 30
+let g:tagbar_vertical = 25
 "去除第一行的帮助信息
 let g:tagbar_compact = 1
 "当编辑代码时，在Tagbar自动追踪变量
@@ -262,16 +291,70 @@ let g:NERDTreeIndicatorMapCustom = {
 
 let g:NERDTreeShowIgnoredStatus = 1
 
-" ==============================================================================
-" tab 标签页切换快捷键
-" ===============================================================================
-:nn <Leader>1 1gt
-:nn <Leader>2 2gt
-:nn <Leader>3 3gt
-:nn <Leader>4 4gt
-:nn <Leader>5 5gt
-:nn <Leader>6 6gt
-:nn <Leader>7 7gt
-:nn <Leader>8 8gt
-:nn <Leader>9 8gt
-:nn <Leader>0 :tablast<CR>
+"==============================================================================
+"Go Def and VIM Go and tagbar 设置
+"==============================================================================
+
+" Code 浏览
+"gd will reuse the current window
+let g:godef_split=0
+let g:godef_same_file_in_same_window=1
+let g:go_def_mapping_enabled=1
+" whenever you move your cursor onto a valid identifier, you'll see that your status line is updated automatically
+let g:go_auto_type_info = 1
+" identifier info updates every 100ms
+set updatetime=100
+" vim-go can automatically highlight matching identifiers.
+let g:go_auto_sameids = 1
+
+let g:tagbar_autofocus = 1
+" p Jump to the tag under the cursor, but stay in the Tagbar window.
+
+
+" change gofmt to goimports
+let g:go_fmt_command = "goimports"
+let g:go_list_type = "quickfix"
+let g:go_autodetect_gopath = 1
+
+
+" 代码高亮设置
+let g:go_highlight_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_function_calls = 1
+let g:go_highlight_extra_types = 1
+
+" If you just call :GoMetaLinter for a given Go source code. By default it'll run go vet, golint and errcheck concurrently
+let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
+
+" Because :GoMetaLinter is usually fast, vim-go also can call it whenever you save a file (just like :GoFmt).
+let g:go_metalinter_autosave = 1
+
+" , to prevent :GoMetaLinter running for too long, we have a setting to cancel it after a given timeout
+let g:go_metalinter_deadline = "5s"
+
+" Enable to copy to clipboard for operations like yank, delete, change and put
+" http://stackoverflow.com/questions/20186975/vim-mac-how-to-copy-to-clipboard-without-pbcopy
+if has('unnamedplus')
+   set clipboard^=unnamed
+   set clipboard^=unnamedplus
+endif
+
+" This enables us to undo files even if you exit Vim.
+if has('persistent_undo')
+   set undofile
+   set undodir=~/.config/vim/tmp/undo//
+endif
+
+"===================================================================================
+"Guru is an editor integrated tool for navigating and understanding Go code. There is a user manual that shows all the features: https://golang.org/s/using-guru
+"1. Put your cursor on top of an identifier and call :GoReferrers. This calls the referrers mode of guru, which finds references to the selected identifier, scanning all necessary packages within the workspace
+"2. guru has also the describe mode. It's just like :GoInfo, but it's a little bit more advanced (it gives us more information)
+" Put your cursor on top of an identifier and call :GoDescribe
+"3. The mode implement of guru just does it and it helps to find the interface a type implements.
+" Put your cursor on top of an identifier and call :GoImplements
+"4. Call :GoWhicherrs to see which errors are from
+"5. Call :GoChannelPeers to see the set of possible send/receives on the channel operand
+"6. :GoCallees, This command shows the possible call targets of the selected "function call.
+"7. :GoCallers,  This command shows the callers of this function
+"8. :GoCallstack, shows an arbitrary path from the root of the call graph to the function containing the selection     
