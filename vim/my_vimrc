@@ -260,7 +260,7 @@ map <F4> :TagbarToggle<CR>
 "打开文件自动 打开tagbar
 autocmd BufReadPost *.cpp,*.c,*.h,*.hpp,*.cc,*.cxx,*.go call tagbar#autoopen()
 "在这儿设定二者的分布
-let g:tagbar_vertical = 25
+let g:tagbar_vertical = 15
 "去除第一行的帮助信息
 let g:tagbar_compact = 1
 "当编辑代码时，在Tagbar自动追踪变量
